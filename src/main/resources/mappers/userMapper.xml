@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- user와 관련된 SQL -->
+<mapper namespace="com.jaein.mapper.UserMapper">
+
+	<resultMap type="com.jaein.dto.LoginDTO" id="LoginInfoResult">
+		<result column="userid" property="userid" />
+		<result column="userpw" property="userpw" />
+	</resultMap>
+	
+	<select id="login" resultType="UserVO">
+		select userid, userpw from
+		tbl_petition_user where userid = #{userid} and
+		userpw = #{userpw}
+
+	</select>
+
+	<insert id="signUp">
+		insert into tbl_petition_user(userid,userpw,username,useremail)
+		values(#{userid},#{userpw},#{username},#{useremail})
+	</insert>
+	
+	<select id="loginCheck" resultType="integer" parameterType="com.jaein.dto.LoginDTO">
+		select count(*) from tbl_petition_user
+		<where>
+			userid = #{userid}
+			AND
+			userpw = #{userpw}
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 게시판과 관련된 SQL -->
+<mapper namespace="com.jaein.mapper.BoardMapper">
+
+	<!-- 조회수 증가 -->
+	<update id="updateViewCnt">
+		update tbl_petition set viewcnt = viewcnt +1 where bno = #{bno}
+	</update>
+
+	<!-- 글 등록  -->
+	<insert id="create">
+		insert into tbl_petition(title,content,writer)
+		values(#{title},#{content},#{writer})
+	</insert>
+
+	<!-- 글 조회  -->
+	<select id="read" resultType="com.jaein.domain.BoardVO">
+		select
+		bno,title,content,writer,regdate,viewcnt
+		from tbl_petition
+		where
+		bno = #{bno}
+	</select>
+
+	<!-- 글 수정  -->
+	<update id="update">
+		update tbl_petition set title =#{title}, content =#{content}
+		where bno =#{bno}
+	</update>
+
+	<!-- 글 삭제  -->
+	<delete id="delete">
+		delete from tbl_petition where bno = #{bno}
+	</delete>
+
+	<!-- 페이징  최신글 작성 기준 정렬-->
+	<select id="listPage" resultType="BoardVO">
+ <![CDATA[
+ select 
+   bno, title, content, writer, regdate, viewcnt 
+ from 
+   tbl_petition 
+ where bno > 0 
+ order by bno desc, regdate desc
+ limit #{page}, 10
+ ]]>
+	</select>
+
+	<!-- 페이지 정렬하여 게시글 가져오기 -->
+	<select id="listCriteria" resultType="BoardVO">
+ <![CDATA[
+ select 
+   bno, title, content, writer, regdate, viewcnt 
+ from 
+   tbl_petition
+ where bno > 0 
+ order by bno desc, regdate desc
+ limit #{pageStart}, #{perPageNum}
+ ]]>
+	</select>
+	
+	<!-- 총 게시글 숫자 반환 -->
+	<select id="countPaging" resultType="int">
+ <![CDATA[
+ select 
+  count(bno)
+ from
+  tbl_petition
+  where
+   bno>0 
+ ]]>
+	</select>
+	  <!-- sql 조각 재사용 용이 반복코드 제거 -->
+	  <!-- 검색기능 -->
+<sql id="search">
+ <if test="searchType != null" > 
+   <if test="searchType == 't'.toString()">
+     and title like CONCAT('%', #{keyword}, '%')
+   </if>
+   <if test="searchType == 'c'.toString()">
+     and content like CONCAT('%', #{keyword}, '%')
+   </if>
+   <if test="searchType == 'w'.toString()">
+     and writer like CONCAT('%', #{keyword}, '%')
+   </if>
+   <if test="searchType == 'tc'.toString()">
+     and ( title like CONCAT('%', #{keyword}, '%') OR content like CONCAT('%', #{keyword}, '%'))
+   </if>
+   <if test="searchType == 'cw'.toString()">
+     and ( content like CONCAT('%', #{keyword}, '%') OR writer like CONCAT('%', #{keyword}, '%'))
+   </if>
+   <if test="searchType == 'tcw'.toString()">
+     and (   title like CONCAT('%', #{keyword}, '%') 
+           OR 
+             content like CONCAT('%', #{keyword}, '%') 
+           OR 
+             writer like CONCAT('%', #{keyword}, '%'))
+   </if>
+ </if>  
+</sql>
+
+<select id="listSearch" resultType="BoardVO">
+<![CDATA[  
+  select *
+  from tbl_petition 
+  where bno > 0
+]]>  
+  <include refid="search"></include>
+<![CDATA[    
+  order by bno desc
+  limit #{pageStart}, #{perPageNum}
+]]>  
+</select>
+  
+<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(bno) 
+  from tbl_petition 
+  where bno > 0 
+]]>
+  <include refid="search"></include>
+ 
+</select>  
+  
+</mapper>
